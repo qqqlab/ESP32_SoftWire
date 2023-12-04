@@ -1,4 +1,4 @@
-# ESP32-SoftWire
+# ESP32_SoftWire
 ESP32 Arduino bit banged fast I2C library, drop in replacement for Wire.h
 
 The library reaches up to 3 MHz I2C clock speed. No fancy bits and bobs: no timeouts, no clock stretching, blocking only... Made for fast IMU sensor reading were an occasional missed read does not matter, but bus hangups do matter.
