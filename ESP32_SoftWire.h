@@ -1,16 +1,39 @@
 /*==========================================================================================
-ESP32-SoftWire
+ESP32_SoftWire
 
 ESP32 Arduino bit banged fast I2C library, drop in replacement for Wire.h
 
 The library reaches up to 3 MHz I2C clock speed. No fancy bits and bobs: no timeouts, no clock stretching, blocking only... Made for fast IMU sensor reading were an occasional missed read does not matter, but bus hangups do matter.
 
+Limitation: pins 0-31 only
+
 Tested on ESP32, might work on other ESP32 variants.
+
 Background
 
 As of December 2023 the official arduino-esp32 Wire library has some nasty bugs. In particular, there is a 1 second timeout which hangs the bus on a bad read, and this timeout can not be lowered without changing the source code, see espressif/esp-idf#4999 and espressif/arduino-esp32#5934. So occasionally (a couple times per minute) 1000 samples are missed when you are reading a sensor at 1 kHz.
 
-Copyright (C) 2023 https://github.com/qqqlab
+MIT License
+
+Copyright (c) 2023 https://github.com/qqqlab
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ===========================================================================================*/
 
 #ifndef ESP32_SOFTWIRE_H
