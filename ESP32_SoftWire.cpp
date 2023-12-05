@@ -36,12 +36,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ===========================================================================================*/
 
-/*==========================================================================================
-M() master sends, S() slave sends
-Write: M(start) M(adr|1)S(ack) M(data)S(ack) M(data)S(nack/ack) M(stop)
-Read:  M(start) M(adr|0)S(ack) S(data)M(ack) S(data)M(nack) M(stop)
-===========================================================================================*/
-
+//-----------------------------------------------------------------------------------------
+// I2C cheat sheet: M() master sends, S() slave sends
+// Write: M(start) M(adr|1)S(ack) M(data)S(ack) M(data)S(nack/ack) M(stop)
+// Read:  M(start) M(adr|0)S(ack) S(data)M(ack) S(data)M(nack) M(stop)
+//-----------------------------------------------------------------------------------------
 
 #include "ESP32_SoftWire.h"
 
@@ -111,19 +110,59 @@ uint8_t SoftWire::endTransmission(bool sendStop) {
   return _ack;
 }
 
+size_t SoftWire::requestFrom(uint8_t address, size_t len, bool stopBit) {
+  int i;
+  _ll_start_cond();
+  _ll_write_byte(address<<1 | 1);
+  for(i=0; i<len-1; i++) {
+    _data[i] = _ll_read_byte(true);
+  }
+  _data[i++] = _ll_read_byte(false);
+  if(stopBit) _ll_stop_cond();
+  _data_len = i;
+  _data_i = 0;
+  return i;
+}
 
+int SoftWire::available(void) {
+  return _data_len - _data_i;
+}
 
+int SoftWire::read(void) {
+  return _data[_data_i++];
+}
+
+int SoftWire::peek(void) {
+  return _data[_data_i];
+} 
+
+void SoftWire::flush(void) { 
+  _data_len = 0;
+  _data_i = 0;
+} 
+
+size_t SoftWire::write(const uint8_t *data, size_t n) {
+  size_t cnt = 0;
+  for(size_t i=0;i<n;i++) {
+    cnt += write(data[i]);
+  }
+  return cnt;
+}
+
+//========================================================================
+// Low Level Bit-Bang I2C
+//========================================================================
 
 //TODO void arbitration_lost(void);
 
-void SoftWire::_ll_start_cond(void)
-{
+void SoftWire::_ll_start_cond(void) {
   if (_started) { 
     // if started, do a restart condition
     // set SDA to 1
     SDA_HI();
     _delay();
     SCL_HI();
+    
 //TODO    while (SCL_IN() == 0) { // Clock stretching
 //TODO       // You should add timeout to this loop
 //TODO     }
@@ -143,15 +182,14 @@ void SoftWire::_ll_start_cond(void)
   _started = true;
 }
 
-void SoftWire::_ll_stop_cond(void)
-{
+void SoftWire::_ll_stop_cond(void) {
   // set SDA to 0
   SDA_LO();
   _delay();
 
   SCL_HI();
-  // Clock stretching
-//TODO   while (SCL_IN() == 0) {
+  
+//TODO   while (SCL_IN() == 0) { // Clock stretching
 //TODO     // add timeout to this loop.
 //TODO   }
 
@@ -170,8 +208,7 @@ void SoftWire::_ll_stop_cond(void)
 }
 
 // Write a bit to I2C bus
-void SoftWire::_ll_write_bit(bool bit)
-{
+void SoftWire::_ll_write_bit(bool bit) {
   if (bit) {
     SDA_HI();
   } else {
@@ -202,8 +239,7 @@ void SoftWire::_ll_write_bit(bool bit)
 }
 
 // Read a bit from I2C bus
-uint8_t SoftWire::_ll_read_bit(void)
-{
+uint8_t SoftWire::_ll_read_bit(void) {
   uint8_t bit;
 
   // Let the target drive data
@@ -232,8 +268,7 @@ uint8_t SoftWire::_ll_read_bit(void)
 }
 
 // Write a byte to I2C bus. Return 1 if ack by the target.
-uint8_t SoftWire::_ll_write_byte(uint8_t byte)
-{
+uint8_t SoftWire::_ll_write_byte(uint8_t byte) {
   for (uint8_t bit = 0; bit < 8; ++bit) {
     _ll_write_bit((byte & 0x80) != 0);
     byte <<= 1;
@@ -245,8 +280,7 @@ uint8_t SoftWire::_ll_write_byte(uint8_t byte)
 }
 
 // Read a byte from I2C bus
-uint8_t SoftWire::_ll_read_byte(bool ack)
-{
+uint8_t SoftWire::_ll_read_byte(bool ack) {
   uint8_t byte = 0;
   uint8_t bit;
 
