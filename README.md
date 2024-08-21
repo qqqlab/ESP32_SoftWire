@@ -4,7 +4,7 @@ ESP32 fast bit-bang I2C library for Arduino, drop in replacement for Wire.h
 
 The library reaches up to 3 MHz I2C clock speed. No fancy bits and bobs: no timeouts, no clock stretching, blocking only... Made for fast IMU sensor reading were an occasional missed read does not matter, but bus hangups do matter.
 
-Tested on ESP32, might work on other ESP32 variants.
+Tested on ESP32, probably works on ESP32-S3 and ESP32-C3, might work on other ESP32 variants.
 
 Limitation: pins 0-31 only
 
