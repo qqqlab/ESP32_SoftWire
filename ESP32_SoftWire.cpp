@@ -15,7 +15,7 @@ As of December 2023 the official arduino-esp32 Wire library has some nasty bugs.
 
 MIT License
 
-Copyright (c) 2023 https://github.com/qqqlab
+Copyright (c) 2023,2024 https://github.com/qqqlab
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -45,12 +45,21 @@ SOFTWARE.
 #include "ESP32_SoftWire.h"
 #include <soc/gpio_struct.h>
 
-#define SDA_HI() GPIO.out_w1ts = _sda_mask // Do not drive SDA (set pin high-impedance)
-#define SDA_LO() GPIO.out_w1tc = _sda_mask // Actively drive SDA signal low
-#define SDA_IN() (GPIO.in & _sda_mask ? 1 : 0) // Return current level of SCL line, 0 or 1
-#define SCL_HI() GPIO.out_w1ts = _scl_mask  // Do not drive SCL (set pin high-impedance)
-#define SCL_LO() GPIO.out_w1tc = _scl_mask // Actively drive SCL signal low
-#define SCL_IN() (GPIO.in & _scl_mask ? 1 : 0) // Return current level of SCL line, 0 or 1
+#if CONFIG_IDF_TARGET_ESP32C3
+  #define SDA_HI() GPIO.out_w1ts.val = _sda_mask // Do not drive SDA (set pin high-impedance)
+  #define SDA_LO() GPIO.out_w1tc.val = _sda_mask // Actively drive SDA signal low
+  #define SDA_IN() (GPIO.in.val & _sda_mask ? 1 : 0) // Return current level of SCL line, 0 or 1
+  #define SCL_HI() GPIO.out_w1ts.val = _scl_mask // Do not drive SCL (set pin high-impedance)
+  #define SCL_LO() GPIO.out_w1tc.val = _scl_mask // Actively drive SCL signal low
+  #define SCL_IN() (GPIO.in.val & _scl_mask ? 1 : 0) // Return current level of SCL line, 0 or 1
+#else
+  #define SDA_HI() GPIO.out_w1ts = _sda_mask // Do not drive SDA (set pin high-impedance)
+  #define SDA_LO() GPIO.out_w1tc = _sda_mask // Actively drive SDA signal low
+  #define SDA_IN() (GPIO.in & _sda_mask ? 1 : 0) // Return current level of SCL line, 0 or 1
+  #define SCL_HI() GPIO.out_w1ts = _scl_mask // Do not drive SCL (set pin high-impedance)
+  #define SCL_LO() GPIO.out_w1tc = _scl_mask // Actively drive SCL signal low
+  #define SCL_IN() (GPIO.in & _scl_mask ? 1 : 0) // Return current level of SCL line, 0 or 1
+#endif
 
 #define DELAY_OVERHEAD_CYCLES 26  //26 cycles overhead for PIN_CLR(); _delay();
 
